@@ -1,5 +1,6 @@
 *.py[cod]
 *~
+docker/.env
 
 # Jasmin
 misc/config/store

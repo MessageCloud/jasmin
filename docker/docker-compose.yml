@@ -1,0 +1,35 @@
+version: '2'
+services:
+  messagecloud_jasmin:
+     build:
+         context: .
+         dockerfile: Dockerfile
+         args:
+           JASMIN_VERSION: "${JASMIN_VERSION}"
+           JASMIN_USERNAME: "${JASMIN_USERNAME}"
+           JASMIN_PASSWORD: "${JASMIN_PASSWORD}"
+           JASMIN_PASSWORD_MD5: "${JASMIN_PASSWORD_MD5}"
+           RABBITMQ_USERNAME: "${RABBITMQ_USERNAME}"
+           RABBITMQ_PASSWORD: "${RABBITMQ_PASSWORD}"
+           JASMIN_API_USERNAME: "${JASMIN_API_USERNAME}"
+           JASMIN_API_PASSWORD: "${JASMIN_API_PASSWORD}"
+           JASMIN_WEBUI_USERNAME: "${JASMIN_WEBUI_USERNAME}"
+           JASMIN_WEBUI_PASSWORD: "${JASMIN_WEBUI_PASSWORD}"
+     image: messagecloud/jasmin:latest
+     network_mode: host
+     restart: always
+     ports:
+         - "2775:2775"
+         - "8990:8990"
+         - "1401:1401"
+         - "6379:6379"
+         - "15672:15672"
+         - "8000:8000"
+         - "8001:8001"
+     environment:
+         JASMIN_HOST: "${JASMIN_HOST}"
+         JASMIN_PORT: "${JASMIN_PORT}"
+         JASMIN_USERNAME: "${JASMIN_USERNAME}"
+         JASMIN_PASSWORD: "${JASMIN_PASSWORD}"
+         RABBITMQ_USERNAME: "${RABBITMQ_USERNAME}"
+         RABBITMQ_PASSWORD: "${RABBITMQ_PASSWORD}"
