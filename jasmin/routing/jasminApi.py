@@ -356,8 +356,8 @@ class HttpConnector(Connector):
             r'(?::\d+)?'  # optional port
             r'(?:/?|[/?]\S+)$', re.IGNORECASE
         )
-        if regex.match(baseurl) == None:
-            raise jasminApiInvalidParamError('HttpConnector url syntax is invalid')
+        #if regex.match(baseurl) == None:
+        #    raise jasminApiInvalidParamError('HttpConnector url syntax is invalid')
 
         Connector.__init__(self, cid)
         self.baseurl = baseurl
