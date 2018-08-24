@@ -9,6 +9,7 @@ ARG JASMIN_VERSION
 ARG JASMIN_USERNAME
 ARG JASMIN_PASSWORD
 ARG JASMIN_PASSWORD_MD5
+ARG JASMIN_PORT
 ARG RABBITMQ_USERNAME
 ARG RABBITMQ_PASSWORD
 ARG JASMIN_API_USERNAME
@@ -53,14 +54,16 @@ RUN mkdir -p /etc/jasmin/resource \
 
 # Change Jasmin configuration
 RUN sed -i '/\[jcli\]/a bind=0.0.0.0' /etc/jasmin/jasmin.cfg && \
+    sed -i '/\[jcli\]/a admin_username='"$JASMIN_USERNAME" /etc/jasmin/jasmin.cfg && \
     sed -i '/\[jcli\]/a admin_password='"$JASMIN_PASSWORD_MD5" /etc/jasmin/jasmin.cfg && \
+    sed -i '/\[jcli\]/a port='"$JASMIN_PORT" /etc/jasmin/jasmin.cfg && \
     sed -i 's/127.0.0.1/0.0.0.0/g' /etc/redis/redis.conf && \
     sed -i '/\[amqp-broker\]/a username='"$RABBITMQ_USERNAME" /etc/jasmin/jasmin.cfg && \
     sed -i '/\[amqp-broker\]/a password='"$RABBITMQ_PASSWORD" /etc/jasmin/jasmin.cfg && \
     rabbitmq-plugins enable rabbitmq_management && \
     echo 0 > /temp
 
-EXPOSE 2775 8990 1401 6379 15672 8000 8001
+EXPOSE 2775 "$JASMIN_PORT" 1401 6379 15672 8000 8001
 VOLUME ["/var/log/jasmin", "/etc/jasmin", "/etc/jasmin/store"]
 COPY ./jasmin-api /jasmin-api
 COPY ./JasminWebPanel /JasminWebPanel
@@ -79,7 +82,6 @@ RUN easy_install -U pip && apt-get install --reinstall python-pip && \
 
 COPY docker-entrypoint.sh /
 ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["jasmind.py", "--enable-interceptor-client", "--enable-dlr-thrower", "--enable-dlr-lookup", "-u", "$JASMIN_USERNAME", "-p", "$JASMIN_PASSWORD"]
 # Notes:
 # - jasmind is started with native dlr-thrower and dlr-lookup threads instead of standalone processes
 # - restapi (0.9rc16+) is not started in this docker configuration

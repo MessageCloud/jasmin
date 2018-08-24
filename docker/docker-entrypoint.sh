@@ -28,4 +28,5 @@ if [ "$2" = "--enable-interceptor-client" ]; then
 fi
 
 echo 'Starting jasmind'
+/usr/bin/python /usr/local/bin/jasmind.py --enable-interceptor-client --enable-dlr-thrower --enable-dlr-lookup -u $JASMIN_USERNAME -p $JASMIN_PASSWORD
 exec "$@"
