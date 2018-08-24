@@ -317,6 +317,8 @@ class DLRLookup(object):
                 dlr_level = dlr['level']
                 dlr_method = dlr['method']
 
+                final_states = ['DELIVRD', 'EXPIRED', 'DELETED', 'UNDELIV', 'REJECTD']
+
                 if dlr_level in [2, 3]:
                     self.log.debug('Got DLR information for msgid[%s], url:%s, level:%s',
                                    submit_sm_queue_id, dlr_url, dlr_level)
@@ -338,8 +340,9 @@ class DLRLookup(object):
                                                                                text=pdu_dlr_text,
                                                                                method=dlr_method))
 
-                    self.log.debug('Removing HTTP dlr map for msgid[%s]', submit_sm_queue_id)
-                    yield self.redisClient.delete('dlr:%s' % submit_sm_queue_id)
+                    if pdu_dlr_status in final_states:
+                        self.log.debug('Removing HTTP dlr map for msgid[%s]', submit_sm_queue_id)
+                        yield self.redisClient.delete('dlr:%s' % submit_sm_queue_id)
             elif connector_type == 'smppsapi':
                 self.log.debug('There is a SMPPs mapping for msgid[%s] ...', msgid)
                 system_id = dlr['system_id']

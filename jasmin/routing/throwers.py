@@ -262,6 +262,10 @@ class deliverSmThrower(Thrower):
             yield self.rejectMessage(message)
             defer.returnValue(None)
 
+        if 'source_subaddress' in RoutedDeliverSmContent.params:
+            self.log.info('Subaddress was set so we can add this on too: %s', RoutedDeliverSmContent.params['source_subaddress'])
+            args['subaddress'] = str(RoutedDeliverSmContent.params['source_subaddress'].value)
+
         # Set the binary arg after deciding where to pick the content from
         args['binary'] = binascii.hexlify(args['content'])
 
@@ -495,8 +499,8 @@ class DLRThrower(Thrower):
     @defer.inlineCallbacks
     def http_dlr_callback(self, message):
         msgid = message.content.properties['message-id']
-        url = message.content.properties['headers']['url'].encode('ascii')
-        method = message.content.properties['headers']['method'].encode('ascii')
+        url = message.content.properties['headers']['url']
+        method = message.content.properties['headers']['method']
         level = message.content.properties['headers']['level']
         self.log.debug('Got one message (msgid:%s) to throw', msgid)
 
@@ -518,6 +522,13 @@ class DLRThrower(Thrower):
             args['text'] = message.content.properties['headers']['text']
 
         try:
+            #urlParts = urllib.parse(url)
+            
+            #baseurl = '%s://%s:%d%s' % urlParts.scheme, urlParts.netloc, urlParts.port, urlParts.path
+            # queryString = parse_qsl(urlparse(url)[4])
+
+            # args += queryString
+
             # Throw the message to http endpoint
             encodedArgs = urllib.urlencode(args)
             postdata = None
@@ -568,9 +579,9 @@ class DLRThrower(Thrower):
 
     @defer.inlineCallbacks
     def smpp_dlr_callback(self, message):
-        msgid = message.content.properties['message-id'].encode('ascii')
+        msgid = message.content.properties['message-id']
         system_id = message.content.properties['headers']['system_id']
-        message_status = message.content.properties['headers']['message_status'].encode('ascii')
+        message_status = message.content.properties['headers']['message_status']
         source_addr = '%s' % message.content.properties['headers']['source_addr']
         destination_addr = '%s' % message.content.properties['headers']['destination_addr']
         sub_date = message.content.properties['headers']['sub_date']
