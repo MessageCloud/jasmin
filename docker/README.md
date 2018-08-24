@@ -62,7 +62,7 @@ You can also reach out for support [here](https://groups.google.com/forum/#!foru
 Usage
 -----
 
-1. Change Directory to the docker directory
+1. Change directory to the docker directory
 
 2. Pull the JasminWebPanel and jasmin-api repositories into the docker directory
 
@@ -73,10 +73,21 @@ https://github.com/jookies/jasmin-api.git
 
 3. Change the jasmin-api port number to 8001 by editing ```jasmin-api/jasmin_api/run_cherrypy.py```
 
-4. Copy the .env.example to .env
+4. Create the jasmin-api ```jasmin-api/jasmin_api/jasmin_api/local_settings.py``` file and only edit the ```SECRET_KEY``` with any random string
 
-5. Make changes to the .env
+```
+TELNET_HOST = os.environ.get('JASMIN_HOST', 'jasmin')
+TELNET_PORT = int(os.environ.get('JASMIN_PORT', 8990))
+TELNET_USERNAME = os.environ.get('JASMIN_USERNAME', 'jcliadmin')
+TELNET_PW = os.environ.get('JASMIN_PASSWORD', 'jclipwd')  # no alternative storing as plain text
+DEBUG = False
+SECRET_KEY = '<input a random string of characters>'
+```
 
-6. To build and run:
+5. Copy the .env.example to .env
+
+6. Make changes to the .env
+
+7. To build and run:
 
 ```docker-compose up```
