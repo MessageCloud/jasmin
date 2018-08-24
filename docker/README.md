@@ -23,7 +23,7 @@ How to use this image
 Run in daemon mode:
 
 ```console
-$ docker run -d -p 2775:2775 -p 8990:8990 -p 1401:1401 -p 6379:6379 -p 15672:15672 -p 8000:8000 -p 8001:8001 --name messagecloud_jasmin messagecloud/jasmin:latest
+$ docker run -d -p 2775:2775 -p 8990:8990 -p 1401:1401 -p 6379:6379 -p 15672:15672 -p 8000:8000 -p 8001:8001 --name docker_messagecloud_jasmin messagecloud/jasmin:latest
 ```
 
 Start/stop daemon:
