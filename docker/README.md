@@ -62,20 +62,20 @@ You can also reach out for support [here](https://groups.google.com/forum/#!foru
 Usage
 -----
 
-1. Change the jasmin-api port number to 8001 by editing ```jasmin-api/jasmin_api/run_cherrypy.py```
+1. Change Directory to the docker directory
 
-2. Change Directory to the docker directory
-
-3. Copy the .env.example to .env
-
-4. Make changes to the .env
-
-5. Pull the JasminWebPanel and jasmin-api repositories into the docker directory
+2. Pull the JasminWebPanel and jasmin-api repositories into the docker directory
 
 ```
 https://github.com/tarikogut/JasminWebPanel.git
 https://github.com/jookies/jasmin-api.git
 ```
+
+3. Change the jasmin-api port number to 8001 by editing ```jasmin-api/jasmin_api/run_cherrypy.py```
+
+4. Copy the .env.example to .env
+
+5. Make changes to the .env
 
 6. To build and run:
 
