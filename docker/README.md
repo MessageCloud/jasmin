@@ -23,14 +23,14 @@ How to use this image
 Run in daemon mode:
 
 ```console
-$ docker run -d -p 1401:1401 -p 2775:2775 -p 8990:8990 --name jasmin_01 jookies/jasmin:latest
+$ docker run -d -p 2775:2775 -p 8990:8990 -p 1401:1401 -p 6379:6379 -p 15672:15672 -p 8000:8000 -p 8001:8001 --name messagecloud_jasmin messagecloud/jasmin:latest
 ```
 
 Start/stop daemon:
 
 ```console
-$ docker stop jasmin_01
-$ docker start jasmin_01
+$ docker stop messagecloud_jasmin_01
+$ docker start messagecloud_jasmin_01
 ```
 
 License
@@ -58,3 +58,25 @@ Issues and support
 If you have any problems with or questions about this image, please contact us through a [GitHub issue](https://github.com/jookies/jasmin/issues).
 
 You can also reach out for support [here](https://groups.google.com/forum/#!forum/jasmin-sms-gateway) or by dropping a message to support [at] jookies [dot] net.
+
+Usage
+-----
+
+1. Change the jasmin-api port number to 8001 by editing ```jasmin-api/jasmin_api/run_cherrypy.py```
+
+2. Change Directory to the docker directory
+
+3. Copy the .env.example to .env
+
+4. Make changes to the .env
+
+5. Pull the JasminWebPanel and jasmin-api repositories into the docker directory
+
+```
+https://github.com/tarikogut/JasminWebPanel.git
+https://github.com/jookies/jasmin-api.git
+```
+
+6. To build and run:
+
+```docker-compose up```
