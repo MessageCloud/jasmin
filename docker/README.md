@@ -29,8 +29,8 @@ $ docker run -d -p 2775:2775 -p 8990:8990 -p 1401:1401 -p 6379:6379 -p 15672:156
 Start/stop daemon:
 
 ```console
-$ docker stop messagecloud_jasmin_01
-$ docker start messagecloud_jasmin_01
+$ docker stop docker_messagecloud_jasmin_1
+$ docker start docker_messagecloud_jasmin_1
 ```
 
 License
