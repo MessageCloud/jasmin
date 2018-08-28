@@ -91,3 +91,16 @@ SECRET_KEY = '<input a random string of characters>'
 7. To build and run:
 
 ```docker-compose up```
+
+CentOS host issues
+------------------
+
+If you are running CentOS as the host OS, Docker has issues resolving DNS.
+
+To fix external DNS resolves if the docker container has issues resolving when running apt-get update:
+1. Edit the ```/etc/sysconfig/docker``` file and add ```--dns=<nameserver address>``` to the ```OPTIONS=''``` section.
+2. Restart the Docker daemon.
+
+To fix RabbitMQ startup issues caused by problems resolving the local hostname:
+Edit the ```/etc/hosts``` file and include the hostname for the 127.0.0.1 declaration:
+```127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4 jasmin jasmin.example.com```
