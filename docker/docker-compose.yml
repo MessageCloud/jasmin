@@ -12,6 +12,13 @@ services:
          - "15672:15672"
          - "8000:8000"
          - "8001:8001"
+     volumes:
+         - jasmin-store:/etc/jasmin/store
+         - jasmin-logs:/var/log/jasmin
+         - redis-data:/var/lib/redis
+         - redis-logs:/var/log/redis
+         - rabbitmq-logs:/var/log/rabbitmq
+         - rabbitmq-data:/var/lib/rabbitmq
      build:
          context: .
          dockerfile: Dockerfile
@@ -34,3 +41,10 @@ services:
          JASMIN_PASSWORD: "${JASMIN_PASSWORD}"
          RABBITMQ_USERNAME: "${RABBITMQ_USERNAME}"
          RABBITMQ_PASSWORD: "${RABBITMQ_PASSWORD}"
+volumes:
+  jasmin-store:
+  jasmin-logs:
+  redis-data:
+  redis-logs:
+  rabbitmq-logs:
+  rabbitmq-data:

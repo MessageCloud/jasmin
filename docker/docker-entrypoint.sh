@@ -3,13 +3,10 @@ set -e
 
 echo 'Starting RabbitMQ'
 /etc/init.d/rabbitmq-server start
-if [[ $(cat /temp) -eq 0 ]]; then
-  rabbitmqctl add_user $(echo $RABBITMQ_USERNAME) $(echo $RABBITMQ_PASSWORD)
-  rabbitmqctl set_user_tags $(echo $RABBITMQ_USERNAME) administrator
-  rabbitmqctl set_permissions -p / $(echo $RABBITMQ_USERNAME) ".*" ".*" ".*"
-  rabbitmqctl delete_user guest
-  echo 1 > /temp
-fi
+rabbitmqctl add_user $(echo $RABBITMQ_USERNAME) $(echo $RABBITMQ_PASSWORD)
+rabbitmqctl set_user_tags $(echo $RABBITMQ_USERNAME) administrator
+rabbitmqctl set_permissions -p / $(echo $RABBITMQ_USERNAME) ".*" ".*" ".*"
+rabbitmqctl delete_user guest
 echo 'Starting Redis'
 /etc/init.d/redis-server start
 echo 'Starting supervisor'

@@ -90,8 +90,12 @@ SECRET_KEY = '<input a random string of characters>'
 
 7. To build and run:
 
-```docker-compose up```
+```docker-compose up --build```
 
+8. When built, remove the Docker image and comment out the ```rabbitmqctl``` lines in the ```docker-entrypoint.sh``` file and rebuild:
+
+```docker-compose up --build```
+ 
 CentOS host issues
 ------------------
 

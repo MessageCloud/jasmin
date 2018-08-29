@@ -2,9 +2,6 @@ FROM debian:jessie
 
 MAINTAINER Jookies LTD <jasmin@jookies.net>
 
-# add our user and group first to make sure their IDs get assigned consistently, regardless of whatever dependencies get added
-RUN groupadd -r jasmin && useradd -r -g jasmin jasmin
-
 ARG JASMIN_VERSION
 ARG JASMIN_USERNAME
 ARG JASMIN_PASSWORD
@@ -28,6 +25,10 @@ ENV JASMIN_API_PASSWORD "${JASMIN_API_PASSWORD}"
 ENV JASMIN_WEBUI_USERNAME "${JASMIN_WEBUI_USERNAME}"
 ENV JASMIN_WEBUI_PASSWORD "${JASMIN_WEBUI_PASSWORD}"
 
+# add our user and group first to make sure their IDs get assigned consistently, regardless of whatever dependencies get added
+RUN groupadd -r jasmin \
+&&  useradd -r -g jasmin jasmin
+
 # Install requirements
 RUN apt-get update && apt-get install -y \
     python2.7 \
@@ -41,44 +42,44 @@ RUN apt-get update && apt-get install -y \
     telnet \
     nano \
     virtualenv \
-  && apt-get clean \
-  && rm -rf /var/lib/apt/lists/*
+&&  apt-get clean \
+&&  rm -rf /var/lib/apt/lists/*
 
 # Install Jasmin SMS gateway
 RUN mkdir -p /etc/jasmin/resource \
     /etc/jasmin/store \
     /var/log/jasmin \
-  && chown jasmin:jasmin /etc/jasmin/store \
+&&  chown jasmin:jasmin /etc/jasmin/store \
     /var/log/jasmin \
-  && pip install --pre jasmin=="$JASMIN_VERSION"
+&&  pip install --pre jasmin=="$JASMIN_VERSION"
 
 # Change Jasmin configuration
-RUN sed -i '/\[jcli\]/a bind=0.0.0.0' /etc/jasmin/jasmin.cfg && \
-    sed -i '/\[jcli\]/a admin_username='"$JASMIN_USERNAME" /etc/jasmin/jasmin.cfg && \
-    sed -i '/\[jcli\]/a admin_password='"$JASMIN_PASSWORD_MD5" /etc/jasmin/jasmin.cfg && \
-    sed -i '/\[jcli\]/a port='"$JASMIN_PORT" /etc/jasmin/jasmin.cfg && \
-    sed -i 's/127.0.0.1/0.0.0.0/g' /etc/redis/redis.conf && \
-    sed -i '/\[amqp-broker\]/a username='"$RABBITMQ_USERNAME" /etc/jasmin/jasmin.cfg && \
-    sed -i '/\[amqp-broker\]/a password='"$RABBITMQ_PASSWORD" /etc/jasmin/jasmin.cfg && \
-    rabbitmq-plugins enable rabbitmq_management && \
-    echo 0 > /temp
+RUN sed -i '/\[jcli\]/a bind=0.0.0.0' /etc/jasmin/jasmin.cfg \
+&&  sed -i '/\[jcli\]/a admin_username='"$JASMIN_USERNAME" /etc/jasmin/jasmin.cfg \
+&&  sed -i '/\[jcli\]/a admin_password='"$JASMIN_PASSWORD_MD5" /etc/jasmin/jasmin.cfg \
+&&  sed -i '/\[jcli\]/a port='"$JASMIN_PORT" /etc/jasmin/jasmin.cfg \
+&&  sed -i 's/127.0.0.1/0.0.0.0/g' /etc/redis/redis.conf \
+&&  sed -i '/\[amqp-broker\]/a username='"$RABBITMQ_USERNAME" /etc/jasmin/jasmin.cfg \
+&&  sed -i '/\[amqp-broker\]/a password='"$RABBITMQ_PASSWORD" /etc/jasmin/jasmin.cfg \
+&&  echo 'save ""' >> /etc/redis/redis.conf \
+&&  echo "save 60 1" >> /etc/redis/redis.conf \
+&&  rabbitmq-plugins enable rabbitmq_management
 
 EXPOSE 2775 "$JASMIN_PORT" 1401 6379 15672 8000 8001
-VOLUME ["/var/log/jasmin", "/etc/jasmin", "/etc/jasmin/store"]
 COPY ./jasmin-api /jasmin-api
 COPY ./JasminWebPanel /JasminWebPanel
 
 # Install the WebUI and API
-RUN easy_install -U pip && apt-get install --reinstall python-pip && \
-    pip install -r /jasmin-api/requirements.txt && \
-    /jasmin-api/jasmin_api/manage.py migrate && \
-    echo "from django.contrib.auth.models import User; User.objects.create_superuser('$JASMIN_API_USERNAME', '', '$JASMIN_API_PASSWORD')" | /jasmin-api/jasmin_api/manage.py shell && \
-    echo "yes" | /jasmin-api/jasmin_api/manage.py collectstatic && \
-    virtualenv /webui && \
-    /webui/bin/pip install -r /JasminWebPanel/requirements.pip && \
-    /webui/bin/python /JasminWebPanel/manage.py migrate && \
-    echo "from django.contrib.auth.models import User; User.objects.create_superuser('$JASMIN_WEBUI_USERNAME', '', '$JASMIN_WEBUI_PASSWORD')" | /webui/bin/python /JasminWebPanel/manage.py shell && \
-    echo "yes" | /webui/bin/python /JasminWebPanel/manage.py collectstatic
+RUN easy_install -U pip && apt-get install --reinstall python-pip \
+&&  pip install -r /jasmin-api/requirements.txt \
+&&  /jasmin-api/jasmin_api/manage.py migrate \
+&&  echo "from django.contrib.auth.models import User; User.objects.create_superuser('$JASMIN_API_USERNAME', '', '$JASMIN_API_PASSWORD')" | /jasmin-api/jasmin_api/manage.py shell \
+&&  echo "yes" | /jasmin-api/jasmin_api/manage.py collectstatic \
+&&  virtualenv /webui \
+&&  /webui/bin/pip install -r /JasminWebPanel/requirements.pip \
+&&  /webui/bin/python /JasminWebPanel/manage.py migrate \
+&&  echo "from django.contrib.auth.models import User; User.objects.create_superuser('$JASMIN_WEBUI_USERNAME', '', '$JASMIN_WEBUI_PASSWORD')" | /webui/bin/python /JasminWebPanel/manage.py shell \
+&&  echo "yes" | /webui/bin/python /JasminWebPanel/manage.py collectstatic
 
 COPY docker-entrypoint.sh /
 ENTRYPOINT ["/docker-entrypoint.sh"]
