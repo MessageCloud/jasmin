@@ -9,6 +9,8 @@ ARG JASMIN_PASSWORD_MD5
 ARG JASMIN_PORT
 ARG RABBITMQ_USERNAME
 ARG RABBITMQ_PASSWORD
+ARG RABBITMQ_HOST
+ARG RABBITMQ_VHOST
 ARG JASMIN_API_USERNAME
 ARG JASMIN_API_PASSWORD
 ARG JASMIN_WEBUI_USERNAME
@@ -20,6 +22,8 @@ ENV JASMIN_PASSWORD "${JASMIN_PASSWORD}"
 ENV JASMIN_PASSWORD_MD5 "${JASMIN_PASSWORD_MD5}"
 ENV RABBITMQ_USERNAME "${RABBITMQ_USERNAME}"
 ENV RABBITMQ_PASSWORD "${RABBITMQ_PASSWORD}"
+ENV RABBITMQ_HOST "${RABBITMQ_HOST}"
+ENV RABBITMQ_VHOST "${RABBITMQ_VHOST}"
 ENV JASMIN_API_USERNAME "${JASMIN_API_USERNAME}"
 ENV JASMIN_API_PASSWORD "${JASMIN_API_PASSWORD}"
 ENV JASMIN_WEBUI_USERNAME "${JASMIN_WEBUI_USERNAME}"
@@ -36,7 +40,7 @@ RUN apt-get update && apt-get install -y \
     python-dev \
     libffi-dev \
     libssl-dev \
-    rabbitmq-server \
+#    rabbitmq-server \
     redis-server \
     supervisor \
     telnet \
@@ -58,16 +62,16 @@ RUN sed -i '/\[jcli\]/a bind=0.0.0.0' /etc/jasmin/jasmin.cfg \
 &&  sed -i '/\[jcli\]/a admin_username='"$JASMIN_USERNAME" /etc/jasmin/jasmin.cfg \
 &&  sed -i '/\[jcli\]/a admin_password='"$JASMIN_PASSWORD_MD5" /etc/jasmin/jasmin.cfg \
 &&  sed -i '/\[jcli\]/a port='"$JASMIN_PORT" /etc/jasmin/jasmin.cfg \
-&&  sed -i 's/127.0.0.1/0.0.0.0/g' /etc/redis/redis.conf \
+&&  sed -i '/\[redis-client\]/a host=172.20.0.2' /etc/jasmin/jasmin.cfg \
 &&  sed -i '/\[amqp-broker\]/a username='"$RABBITMQ_USERNAME" /etc/jasmin/jasmin.cfg \
 &&  sed -i '/\[amqp-broker\]/a password='"$RABBITMQ_PASSWORD" /etc/jasmin/jasmin.cfg \
-&&  echo 'save ""' >> /etc/redis/redis.conf \
-&&  echo "save 60 1" >> /etc/redis/redis.conf \
-&&  rabbitmq-plugins enable rabbitmq_management
+&&  sed -i '/\[amqp-broker\]/a host='"$RABBITMQ_HOST" /etc/jasmin/jasmin.cfg \
+&&  sed -i '/\[amqp-broker\]/a vhost='"$RABBITMQ_VHOST" /etc/jasmin/jasmin.cfg
+#&&  rabbitmq-plugins enable rabbitmq_management
 
-EXPOSE 2775 "$JASMIN_PORT" 1401 6379 15672 8000 8001
-COPY ./jasmin-api /jasmin-api
-COPY ./JasminWebPanel /JasminWebPanel
+EXPOSE 2775 "$JASMIN_PORT" 1401 8000 8001
+COPY ./docker/jasmin-api /jasmin-api
+COPY ./docker/JasminWebPanel /JasminWebPanel
 
 # Install the WebUI and API
 RUN easy_install -U pip && apt-get install --reinstall python-pip \
@@ -81,7 +85,9 @@ RUN easy_install -U pip && apt-get install --reinstall python-pip \
 &&  echo "from django.contrib.auth.models import User; User.objects.create_superuser('$JASMIN_WEBUI_USERNAME', '', '$JASMIN_WEBUI_PASSWORD')" | /webui/bin/python /JasminWebPanel/manage.py shell \
 &&  echo "yes" | /webui/bin/python /JasminWebPanel/manage.py collectstatic
 
-COPY docker-entrypoint.sh /
+ADD ./jasmin /usr/local/lib/python2.7/dist-packages/jasmin/
+
+COPY /docker/docker-entrypoint.sh /
 ENTRYPOINT ["/docker-entrypoint.sh"]
 # Notes:
 # - jasmind is started with native dlr-thrower and dlr-lookup threads instead of standalone processes

@@ -58,8 +58,8 @@ class DLRLookup(object):
         consumerTag = 'DLRLookup-%s' % self.pid
         queueName = 'DLRLookup-%s' % self.pid  # A local queue to this object
         routing_key = 'dlr.*'
-        yield self.amqpBroker.chan.exchange_declare(exchange='messaging', type='topic')
-        yield self.amqpBroker.named_queue_declare(queue=queueName)
+        yield self.amqpBroker.chan.exchange_declare(exchange='messaging', type='topic', durable='true', arguments={"Policy":"ha-jasmin"})
+        yield self.amqpBroker.named_queue_declare(queue=queueName, durable='true', arguments={"Policy":"ha-jasmin"})
         yield self.amqpBroker.chan.queue_bind(queue=queueName, exchange="messaging", routing_key=routing_key)
         yield self.amqpBroker.chan.basic_consume(queue=queueName, no_ack=False, consumer_tag=consumerTag)
         self.amqpBroker.client.queue(consumerTag).addCallback(self.setup_callbacks)

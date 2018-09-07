@@ -2,26 +2,24 @@ version: '2'
 services:
   messagecloud_jasmin:
      image: messagecloud/jasmin:latest
-     network_mode: host
      restart: always
      ports:
          - "2775:2775"
          - "${JASMIN_PORT}:${JASMIN_PORT}"
          - "1401:1401"
-         - "6379:6379"
-         - "15672:15672"
          - "8000:8000"
          - "8001:8001"
      volumes:
          - jasmin-store:/etc/jasmin/store
          - jasmin-logs:/var/log/jasmin
-         - redis-data:/var/lib/redis
-         - redis-logs:/var/log/redis
-         - rabbitmq-logs:/var/log/rabbitmq
-         - rabbitmq-data:/var/lib/rabbitmq
+#         - rabbitmq-logs:/var/log/rabbitmq
+#         - rabbitmq-data:/var/lib/rabbitmq
+     networks:
+       jasmin-network:
+         ipv4_address: 172.20.0.1
      build:
-         context: .
-         dockerfile: Dockerfile
+         context: ..
+         dockerfile: /docker/Dockerfile
          args:
            JASMIN_VERSION: "${JASMIN_VERSION}"
            JASMIN_USERNAME: "${JASMIN_USERNAME}"
@@ -30,6 +28,8 @@ services:
            JASMIN_PORT: "${JASMIN_PORT}"
            RABBITMQ_USERNAME: "${RABBITMQ_USERNAME}"
            RABBITMQ_PASSWORD: "${RABBITMQ_PASSWORD}"
+           RABBITMQ_HOST: "${RABBITMQ_HOST}"
+           RABBITMQ_VHOST: "${RABBITMQ_VHOST}"
            JASMIN_API_USERNAME: "${JASMIN_API_USERNAME}"
            JASMIN_API_PASSWORD: "${JASMIN_API_PASSWORD}"
            JASMIN_WEBUI_USERNAME: "${JASMIN_WEBUI_USERNAME}"
@@ -41,10 +41,30 @@ services:
          JASMIN_PASSWORD: "${JASMIN_PASSWORD}"
          RABBITMQ_USERNAME: "${RABBITMQ_USERNAME}"
          RABBITMQ_PASSWORD: "${RABBITMQ_PASSWORD}"
+  messagecloud_redis:
+     image: redis:latest
+     restart: always
+     ports:
+         - "6379:6379"
+     entrypoint: redis-server /usr/local/etc/redis/redis.conf
+     volumes:
+         - ./redis.conf:/usr/local/etc/redis/redis.conf
+         - redis-data:/data
+         - redis-logs:/var/log/redis
+     networks:
+       jasmin-network:
+         ipv4_address: 172.20.0.2
 volumes:
   jasmin-store:
   jasmin-logs:
   redis-data:
   redis-logs:
-  rabbitmq-logs:
-  rabbitmq-data:
+#  rabbitmq-logs:
+#  rabbitmq-data:
+networks:
+  jasmin-network:
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+          ip_range: 172.20.0.0/24
+          gateway: 172.20.0.254

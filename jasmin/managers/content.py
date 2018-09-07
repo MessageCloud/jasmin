@@ -41,6 +41,7 @@ class PDU(Content):
         if 'headers' not in properties:
             properties['headers'] = {}
         properties['headers']['created_at'] = str(datetime.datetime.now())
+        properties['delivery-mode'] = 2
 
         Content.__init__(self, body, children, properties)
 

@@ -79,11 +79,11 @@ class RouterPB(pb.Avatar):
             self.log.info("AMQP Broker channel is ready now, let's go !")
 
         # Subscribe to deliver.sm.* queues
-        yield self.amqpBroker.chan.exchange_declare(exchange='messaging', type='topic')
+        yield self.amqpBroker.chan.exchange_declare(exchange='messaging', type='topic', durable='true', arguments={"Policy":"ha-jasmin"})
         consumerTag = 'RouterPB-delivers'
         routingKey = 'deliver.sm.*'
         queueName = 'RouterPB_deliver_sm_all'  # A local queue to RouterPB
-        yield self.amqpBroker.named_queue_declare(queue=queueName)
+        yield self.amqpBroker.named_queue_declare(queue=queueName, durable='true', arguments={"Policy":"ha-jasmin"})
         yield self.amqpBroker.chan.queue_bind(queue=queueName, exchange="messaging", routing_key=routingKey)
         yield self.amqpBroker.chan.basic_consume(queue=queueName, no_ack=False, consumer_tag=consumerTag)
         self.deliver_sm_q = yield self.amqpBroker.client.queue(consumerTag)
@@ -91,11 +91,11 @@ class RouterPB(pb.Avatar):
         self.log.info('RouterPB is consuming from routing key: %s', routingKey)
 
         # Subscribe to bill_request.submit_sm_resp.* queues
-        yield self.amqpBroker.chan.exchange_declare(exchange='billing', type='topic')
+        yield self.amqpBroker.chan.exchange_declare(exchange='billing', type='topic', durable='true', arguments={"Policy":"ha-jasmin"})
         consumerTag = 'RouterPB-billrequests'
         routingKey = 'bill_request.submit_sm_resp.*'
         queueName = 'RouterPB_bill_request_submit_sm_resp_all'  # A local queue to RouterPB
-        yield self.amqpBroker.named_queue_declare(queue=queueName)
+        yield self.amqpBroker.named_queue_declare(queue=queueName, durable='true', arguments={"Policy":"ha-jasmin"})
         yield self.amqpBroker.chan.queue_bind(queue=queueName, exchange="billing", routing_key=routingKey)
         yield self.amqpBroker.chan.basic_consume(queue=queueName, no_ack=False, consumer_tag=consumerTag)
         self.bill_request_submit_sm_resp_q = yield self.amqpBroker.client.queue(consumerTag)

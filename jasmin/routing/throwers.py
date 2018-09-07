@@ -160,8 +160,8 @@ class Thrower(Service):
 
         # Declare exchange, queue and start consuming to self.callback
         yield self.amqpBroker.chan.exchange_declare(exchange=self.exchangeName,
-                                                    type='topic')
-        yield self.amqpBroker.named_queue_declare(queue=self.queueName)
+                                                    type='topic', durable='true', arguments={"Policy":"ha-jasmin"})
+        yield self.amqpBroker.named_queue_declare(queue=self.queueName, durable='true', arguments={"Policy":"ha-jasmin"})
         yield self.amqpBroker.chan.queue_bind(queue=self.queueName,
                                               exchange=self.exchangeName,
                                               routing_key=self.routingKey)

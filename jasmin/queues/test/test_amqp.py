@@ -77,7 +77,7 @@ class ConnectTestCase(AmqpTestCase):
 
         exchange_name = '%s_randomName' % time.time()
 
-        yield self.amqp.chan.exchange_declare(exchange=exchange_name, type="fanout")
+        yield self.amqp.chan.exchange_declare(exchange=exchange_name, type="fanout", durable='true', arguments={"Policy":"ha-jasmin"})
 
         yield self.amqp.disconnect()
 
@@ -87,7 +87,7 @@ class PublishTestCase(AmqpTestCase):
     def test_publish_to_topic_exchange(self):
         yield self.connect()
 
-        yield self.amqp.chan.exchange_declare(exchange='%s_topic' % self.exchange_name, type="topic", durable=True)
+        yield self.amqp.chan.exchange_declare(exchange='%s_topic' % self.exchange_name, type="topic", durable='true', arguments={"Policy":"ha-jasmin"})
 
         yield self.amqp.publish(exchange=self.exchange_name, routing_key="submit.sm", content=Content(self.message))
 
@@ -97,7 +97,7 @@ class PublishTestCase(AmqpTestCase):
     def test_publish_to_direct_exchange(self):
         yield self.connect()
 
-        yield self.amqp.chan.exchange_declare(exchange='%s_direct' % self.exchange_name, type="direct", durable=True)
+        yield self.amqp.chan.exchange_declare(exchange='%s_direct' % self.exchange_name, type="direct", durable='true', arguments={"Policy":"ha-jasmin"})
 
         yield self.amqp.publish(exchange=self.exchange_name, routing_key="submit_sm", content=Content(self.message))
 
@@ -107,7 +107,7 @@ class PublishTestCase(AmqpTestCase):
     def test_publish_to_fanout_exchange(self):
         yield self.connect()
 
-        yield self.amqp.chan.exchange_declare(exchange='%s_fanout' % self.exchange_name, type="fanout", durable=True)
+        yield self.amqp.chan.exchange_declare(exchange='%s_fanout' % self.exchange_name, type="fanout", durable='true', arguments={"Policy":"ha-jasmin"})
 
         yield self.amqp.publish(exchange=self.exchange_name, routing_key="submit_sm", content=Content(self.message))
 
@@ -117,7 +117,7 @@ class PublishTestCase(AmqpTestCase):
     def test_publish_to_queue(self):
         yield self.connect()
 
-        yield self.amqp.named_queue_declare(queue="submit.sm.connector01")
+        yield self.amqp.named_queue_declare(queue="submit.sm.connector01", durable='true', arguments={"Policy":"ha-jasmin"})
 
         yield self.amqp.publish(routing_key="submit.sm.connector01", content=Content(self.message))
 
@@ -152,7 +152,7 @@ class ConsumeTestCase(ConsumeTools):
     def test_consume_queue(self):
         yield self.connect()
 
-        yield self.amqp.named_queue_declare(queue="submit.sm.connector01")
+        yield self.amqp.named_queue_declare(queue="submit.sm.connector01", durable='true', arguments={"Policy":"ha-jasmin"})
 
         yield self.amqp.chan.basic_consume(queue="submit.sm.connector01", no_ack=True, consumer_tag='qtag')
         self.queue = yield self.amqp.client.queue('qtag')
@@ -170,7 +170,7 @@ class PublishConsumeTestCase(ConsumeTools):
     def test_simple_publish_consume(self):
         yield self.connect()
 
-        yield self.amqp.named_queue_declare(queue="submit.sm.connector01")
+        yield self.amqp.named_queue_declare(queue="submit.sm.connector01", durable='true', arguments={"Policy":"ha-jasmin"})
 
         # Consume
         yield self.amqp.chan.basic_consume(queue="submit.sm.connector01", no_ack=True, consumer_tag='qtag')
@@ -194,10 +194,10 @@ class PublishConsumeTestCase(ConsumeTools):
     def test_simple_publish_consume_by_topic(self):
         yield self.connect()
 
-        yield self.amqp.chan.exchange_declare(exchange='messaging', type='topic')
+        yield self.amqp.chan.exchange_declare(exchange='messaging', type='topic', durable='true', arguments={"Policy":"ha-jasmin"})
 
         # Consume
-        yield self.amqp.named_queue_declare(queue="submit.sm_all")
+        yield self.amqp.named_queue_declare(queue="submit.sm_all", durable='true', arguments={"Policy":"ha-jasmin"})
         yield self.amqp.chan.queue_bind(queue="submit.sm_all", exchange="messaging", routing_key="submit.sm.*")
         yield self.amqp.chan.basic_consume(queue="submit.sm_all", no_ack=True, consumer_tag='qtag')
         queue = yield self.amqp.client.queue('qtag')
@@ -221,8 +221,8 @@ class PublishConsumeTestCase(ConsumeTools):
     def test_publish_consume_from_different_queues(self):
         yield self.connect()
 
-        yield self.amqp.named_queue_declare(queue="submit.sm.connector01")
-        yield self.amqp.named_queue_declare(queue="deliver.sm.connector01")
+        yield self.amqp.named_queue_declare(queue="submit.sm.connector01", durable='true', arguments={"Policy":"ha-jasmin"})
+        yield self.amqp.named_queue_declare(queue="deliver.sm.connector01", durable='true', arguments={"Policy":"ha-jasmin"})
 
         # Consume
         yield self.amqp.chan.basic_consume(queue="submit.sm.connector01", no_ack=True,
@@ -255,11 +255,11 @@ class PublishConsumeTestCase(ConsumeTools):
         starting a connector with some pending messages for it"""
         yield self.connect()
 
-        yield self.amqp.chan.exchange_declare(exchange='messaging', type='topic')
+        yield self.amqp.chan.exchange_declare(exchange='messaging', type='topic', durable='true', arguments={"Policy":"ha-jasmin"})
 
         # Consume
         consumerTag = 'lateConsumerTest-%s' % (str(uuid.uuid4()))
-        yield self.amqp.named_queue_declare(queue="submit.sm.connector01")
+        yield self.amqp.named_queue_declare(queue="submit.sm.connector01", durable='true', arguments={"Policy":"ha-jasmin"})
         yield self.amqp.chan.queue_bind(queue="submit.sm.connector01", exchange="messaging", routing_key="submit.sm.*")
         yield self.amqp.chan.basic_consume(queue="submit.sm.connector01", no_ack=False, consumer_tag=consumerTag)
         queue = yield self.amqp.client.queue(consumerTag)
@@ -289,10 +289,10 @@ class PublishConsumeTestCase(ConsumeTools):
         """
         yield self.connect()
 
-        yield self.amqp.chan.exchange_declare(exchange='messaging', type='topic')
+        yield self.amqp.chan.exchange_declare(exchange='messaging', type='topic', durable='true', arguments={"Policy":"ha-jasmin"})
 
         # Consume
-        yield self.amqp.named_queue_declare(queue="submit.sm_all")
+        yield self.amqp.named_queue_declare(queue="submit.sm_all", durable='true', arguments={"Policy":"ha-jasmin"})
         yield self.amqp.chan.queue_bind(queue="submit.sm_all", exchange="messaging", routing_key="submit.sm.*")
         yield self.amqp.chan.basic_consume(queue="submit.sm_all", no_ack=True, consumer_tag='qtag')
         queue = yield self.amqp.client.queue('qtag')
@@ -343,10 +343,10 @@ class RejectAndRequeueTestCase(ConsumeTools):
         "Related to #67, test for consuming all requeued messages"
         yield self.connect()
 
-        yield self.amqp.chan.exchange_declare(exchange='messaging', type='topic')
+        yield self.amqp.chan.exchange_declare(exchange='messaging', type='topic', durable='true', arguments={"Policy":"ha-jasmin"})
 
         # Consume
-        yield self.amqp.named_queue_declare(queue="submit.sm_all_1")
+        yield self.amqp.named_queue_declare(queue="submit.sm_all_1", durable='true', arguments={"Policy":"ha-jasmin"})
         yield self.amqp.chan.queue_bind(queue="submit.sm_all_1", exchange="messaging", routing_key="submit.sm.*")
         yield self.amqp.chan.basic_consume(queue="submit.sm_all_1", no_ack=False, consumer_tag='qtag')
         queue = yield self.amqp.client.queue('qtag')
@@ -373,10 +373,10 @@ class RejectAndRequeueTestCase(ConsumeTools):
         """Related to #67, Starting consuming with a """
         yield self.connect()
 
-        yield self.amqp.chan.exchange_declare(exchange='messaging', type='topic')
+        yield self.amqp.chan.exchange_declare(exchange='messaging', type='topic', durable='true', arguments={"Policy":"ha-jasmin"})
 
         # Setup Consumer
-        yield self.amqp.named_queue_declare(queue="submit.sm_all_2")
+        yield self.amqp.named_queue_declare(queue="submit.sm_all_2", durable='true', arguments={"Policy":"ha-jasmin"})
         yield self.amqp.chan.queue_bind(queue="submit.sm_all_2", exchange="messaging", routing_key="submit.sm.*")
         yield self.amqp.chan.basic_consume(queue="submit.sm_all_2", no_ack=False, consumer_tag='qtag')
         queue = yield self.amqp.client.queue('qtag')
