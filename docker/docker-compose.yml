@@ -12,8 +12,6 @@ services:
      volumes:
          - jasmin-store:/etc/jasmin/store
          - jasmin-logs:/var/log/jasmin
-#         - rabbitmq-logs:/var/log/rabbitmq
-#         - rabbitmq-data:/var/lib/rabbitmq
      networks:
        jasmin-network:
          ipv4_address: 172.20.0.1
@@ -59,8 +57,6 @@ volumes:
   jasmin-logs:
   redis-data:
   redis-logs:
-#  rabbitmq-logs:
-#  rabbitmq-data:
 networks:
   jasmin-network:
     ipam:

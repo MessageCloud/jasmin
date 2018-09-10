@@ -1,12 +1,6 @@
 #!/bin/bash
 set -e
 
-#echo 'Starting RabbitMQ'
-#/etc/init.d/rabbitmq-server start
-#rabbitmqctl add_user $(echo $RABBITMQ_USERNAME) $(echo $RABBITMQ_PASSWORD)
-#rabbitmqctl set_user_tags $(echo $RABBITMQ_USERNAME) administrator
-#rabbitmqctl set_permissions -p / $(echo $RABBITMQ_USERNAME) ".*" ".*" ".*"
-#rabbitmqctl delete_user guest
 echo 'Starting supervisor'
 /etc/init.d/supervisor start
 echo 'Starting Jasmin API'

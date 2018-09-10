@@ -40,7 +40,6 @@ RUN apt-get update && apt-get install -y \
     python-dev \
     libffi-dev \
     libssl-dev \
-#    rabbitmq-server \
     redis-server \
     supervisor \
     telnet \
@@ -69,7 +68,6 @@ RUN sed -i '/\[jcli\]/a bind=0.0.0.0' /etc/jasmin/jasmin.cfg \
 &&  sed -i '/\[amqp-broker\]/a host='"$RABBITMQ_HOST" /etc/jasmin/jasmin.cfg \
 &&  sed -i '/\[amqp-broker\]/a vhost='"$RABBITMQ_VHOST" /etc/jasmin/jasmin.cfg \
 &&  sed -i '/\[amqp-broker\]/a heartbeat=15' /etc/jasmin/jasmin.cfg
-#&&  rabbitmq-plugins enable rabbitmq_management
 
 EXPOSE 2775 "$JASMIN_PORT" 1401 8000 8001
 COPY ./docker/jasmin-api /jasmin-api
