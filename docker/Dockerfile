@@ -62,11 +62,13 @@ RUN sed -i '/\[jcli\]/a bind=0.0.0.0' /etc/jasmin/jasmin.cfg \
 &&  sed -i '/\[jcli\]/a admin_username='"$JASMIN_USERNAME" /etc/jasmin/jasmin.cfg \
 &&  sed -i '/\[jcli\]/a admin_password='"$JASMIN_PASSWORD_MD5" /etc/jasmin/jasmin.cfg \
 &&  sed -i '/\[jcli\]/a port='"$JASMIN_PORT" /etc/jasmin/jasmin.cfg \
+&&  sed -i '/\[smpp-server\]/a dlr_expiry=259200' /etc/jasmin/jasmin.cfg \
 &&  sed -i '/\[redis-client\]/a host=172.20.0.2' /etc/jasmin/jasmin.cfg \
 &&  sed -i '/\[amqp-broker\]/a username='"$RABBITMQ_USERNAME" /etc/jasmin/jasmin.cfg \
 &&  sed -i '/\[amqp-broker\]/a password='"$RABBITMQ_PASSWORD" /etc/jasmin/jasmin.cfg \
 &&  sed -i '/\[amqp-broker\]/a host='"$RABBITMQ_HOST" /etc/jasmin/jasmin.cfg \
-&&  sed -i '/\[amqp-broker\]/a vhost='"$RABBITMQ_VHOST" /etc/jasmin/jasmin.cfg
+&&  sed -i '/\[amqp-broker\]/a vhost='"$RABBITMQ_VHOST" /etc/jasmin/jasmin.cfg \
+&&  sed -i '/\[amqp-broker\]/a heartbeat=15' /etc/jasmin/jasmin.cfg
 #&&  rabbitmq-plugins enable rabbitmq_management
 
 EXPOSE 2775 "$JASMIN_PORT" 1401 8000 8001

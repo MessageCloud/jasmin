@@ -27,6 +27,7 @@ class RoutedDeliverSmContent(PDU):
             dcs = [dcs]
 
         props['message-id'] = msgid
+        props['delivery-mode'] = 2
         props['headers'] = {
             'route-type': route_type,
             'src-connector-id': scid,
