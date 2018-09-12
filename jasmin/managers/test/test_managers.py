@@ -32,6 +32,15 @@ from jasmin.tools.cred.portal import JasminPBRealm
 from jasmin.tools.proxies import ConnectError
 from jasmin.tools.spread.pb import JasminPBPortalRoot
 
+# Related to travis-ci builds
+ROOT_PATH = os.getenv('ROOT_PATH', '/')
+
+config_file_location = '%s/etc/jasmin/jasmin.cfg' % ROOT_PATH
+AMQPJasminConfigInstance = AmqpConfig(config_file_location)
+
+arguments = {}
+if AMQPJasminConfigInstance.policy is not None:
+       arguments['Policy'] = AMQPJasminConfigInstance.policy
 
 @defer.inlineCallbacks
 def waitFor(seconds):
@@ -1099,8 +1108,8 @@ class ClientConnectorDeliverSmTestCases(SMSCSimulatorDeliverSM):
         # Bind to deliver.sm.CID
         routingKey = 'deliver.sm.%s' % self.defaultConfig.id
         queueName = 'test_deliverSm'
-        yield self.amqpBroker.chan.exchange_declare(exchange='messaging', type='topic', durable='true', arguments={"Policy":"ha-jasmin"})
-        yield self.amqpBroker.named_queue_declare(queue=queueName, exclusive=True, auto_delete=True, durable='true', arguments={"Policy":"ha-jasmin"})
+        yield self.amqpBroker.chan.exchange_declare(exchange='messaging', type='topic', durable='true', arguments=arguments)
+        yield self.amqpBroker.named_queue_declare(queue=queueName, exclusive=True, auto_delete=True, durable='true', arguments=arguments)
         yield self.amqpBroker.chan.queue_bind(queue=queueName, exchange="messaging", routing_key=routingKey)
 
         yield self.add(self.defaultConfig)

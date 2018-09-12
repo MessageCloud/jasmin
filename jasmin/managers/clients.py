@@ -1,3 +1,4 @@
+import os
 import cPickle as pickle
 import datetime
 import logging
@@ -16,9 +17,19 @@ from jasmin.vendor.smpp.twisted.protocol import SMPPSessionStates
 from .configs import SMPPClientSMListenerConfig
 from .content import SubmitSmContent
 from .listeners import SMPPClientSMListener
+from jasmin.queues.configs import AmqpConfig
 
 LOG_CATEGORY = "jasmin-pb-client-mgmt"
 
+# Related to travis-ci builds
+ROOT_PATH = os.getenv('ROOT_PATH', '/')
+
+config_file_location = '%s/etc/jasmin/jasmin.cfg' % ROOT_PATH
+AMQPJasminConfigInstance = AmqpConfig(config_file_location)
+
+arguments = {}
+if AMQPJasminConfigInstance.policy is not None:
+       arguments['Policy'] = AMQPJasminConfigInstance.policy
 
 class ConfigProfileLoadingError(Exception):
     """
@@ -239,12 +250,12 @@ class SMPPClientManagerPB(pb.Avatar):
 
         # Declare queues
         # First declare the messaging exchange (has no effect if its already declared)
-        yield self.amqpBroker.chan.exchange_declare(exchange='messaging', type='topic', durable='true', arguments={"Policy":"ha-jasmin"})
+        yield self.amqpBroker.chan.exchange_declare(exchange='messaging', type='topic', durable='true', arguments=arguments)
         # submit.sm queue declaration and binding
         submit_sm_queue = 'submit.sm.%s' % c.id
         routing_key = 'submit.sm.%s' % c.id
         self.log.info('Binding %s queue to %s route_key', submit_sm_queue, routing_key)
-        yield self.amqpBroker.named_queue_declare(queue=submit_sm_queue, durable='true', arguments={"Policy":"ha-jasmin"})
+        yield self.amqpBroker.named_queue_declare(queue=submit_sm_queue, durable='true', arguments=arguments)
         yield self.amqpBroker.chan.queue_bind(queue=submit_sm_queue,
                                               exchange="messaging",
                                               routing_key=routing_key)

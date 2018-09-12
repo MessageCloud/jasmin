@@ -1,3 +1,4 @@
+import os
 import logging
 from logging.handlers import TimedRotatingFileHandler
 
@@ -7,9 +8,19 @@ from txamqp.queue import Closed
 
 from jasmin.managers.content import DLRContentForHttpapi, DLRContentForSmpps
 from jasmin.tools.singleton import Singleton
+from jasmin.queues.configs import AmqpConfig
 
 LOG_CATEGORY = "dlr"
 
+# Related to travis-ci builds
+ROOT_PATH = os.getenv('ROOT_PATH', '/')
+
+config_file_location = '%s/etc/jasmin/jasmin.cfg' % ROOT_PATH
+AMQPJasminConfigInstance = AmqpConfig(config_file_location)
+
+arguments = {}
+if AMQPJasminConfigInstance.policy is not None:
+       arguments['Policy'] = AMQPJasminConfigInstance.policy
 
 class RedisError(Exception):
     """Raised for any Redis connectivity problem"""
@@ -58,8 +69,8 @@ class DLRLookup(object):
         consumerTag = 'DLRLookup-%s' % self.pid
         queueName = 'DLRLookup-%s' % self.pid  # A local queue to this object
         routing_key = 'dlr.*'
-        yield self.amqpBroker.chan.exchange_declare(exchange='messaging', type='topic', durable='true', arguments={"Policy":"ha-jasmin"})
-        yield self.amqpBroker.named_queue_declare(queue=queueName, durable='true', arguments={"Policy":"ha-jasmin"})
+        yield self.amqpBroker.chan.exchange_declare(exchange='messaging', type='topic', durable='true', arguments=arguments)
+        yield self.amqpBroker.named_queue_declare(queue=queueName, durable='true', arguments=arguments)
         yield self.amqpBroker.chan.queue_bind(queue=queueName, exchange="messaging", routing_key=routing_key)
         yield self.amqpBroker.chan.basic_consume(queue=queueName, no_ack=False, consumer_tag=consumerTag)
         self.amqpBroker.client.queue(consumerTag).addCallback(self.setup_callbacks)

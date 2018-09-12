@@ -17,7 +17,7 @@ services:
          ipv4_address: 172.20.0.1
      build:
          context: ..
-         dockerfile: /docker/Dockerfile
+         dockerfile: /docker/Dockerfile-HA-RabbitMQ
          args:
            JASMIN_VERSION: "${JASMIN_VERSION}"
            JASMIN_USERNAME: "${JASMIN_USERNAME}"
@@ -26,15 +26,12 @@ services:
            JASMIN_PORT: "${JASMIN_PORT}"
            RABBITMQ_USERNAME: "${RABBITMQ_USERNAME}"
            RABBITMQ_PASSWORD: "${RABBITMQ_PASSWORD}"
-           RABBITMQ_HOST: "172.20.0.3"
+           RABBITMQ_HOST: "${RABBITMQ_HOST}"
+           RABBITMQ_VHOST: "${RABBITMQ_VHOST}"
            JASMIN_API_USERNAME: "${JASMIN_API_USERNAME}"
            JASMIN_API_PASSWORD: "${JASMIN_API_PASSWORD}"
            JASMIN_WEBUI_USERNAME: "${JASMIN_WEBUI_USERNAME}"
            JASMIN_WEBUI_PASSWORD: "${JASMIN_WEBUI_PASSWORD}"
-           MYSQL_USERNAME: "${MYSQL_USERNAME}"
-           MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
-           MYSQL_HOST: "${MYSQL_HOST}"
-           MYSQL_DATABASE: "${MYSQL_DATABASE}"
      environment:
          JASMIN_HOST: "${JASMIN_HOST}"
          JASMIN_PORT: "${JASMIN_PORT}"
@@ -42,10 +39,6 @@ services:
          JASMIN_PASSWORD: "${JASMIN_PASSWORD}"
          RABBITMQ_USERNAME: "${RABBITMQ_USERNAME}"
          RABBITMQ_PASSWORD: "${RABBITMQ_PASSWORD}"
-     depends_on:
-         - messagecloud_redis
-         - messagecloud_rabbit
-         - messagecloud_mysql
   messagecloud_redis:
      image: redis:latest
      restart: always
@@ -59,45 +52,11 @@ services:
      networks:
        jasmin-network:
          ipv4_address: 172.20.0.2
-  messagecloud_rabbit:
-     image: rabbitmq:management
-     hostname: rabbit
-     restart: always
-     ports:
-         - "15672:15672"
-     volumes:
-         - rabbitmq-logs:/var/log/rabbitmq
-         - rabbitmq-data:/var/lib/rabbitmq
-     networks:
-       jasmin-network:
-         ipv4_address: 172.20.0.3
-     environment:
-         - RABBITMQ_DEFAULT_USER=${RABBITMQ_USERNAME}
-         - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
-  messagecloud_mysql:
-     image: mysql:5.7
-     restart: always
-     ports:
-         - "3306:3306"
-     volumes:
-         - mysql-data:/var/lib/mysql
-         - ./submit_log.sql:/docker-entrypoint-initdb.d/submit_log.sql
-     networks:
-       jasmin-network:
-         ipv4_address: 172.20.0.4
-     environment:
-         MYSQL_DATABASE: "${MYSQL_DATABASE}"
-         MYSQL_USER: "${MYSQL_USERNAME}"
-         MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
-         MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
 volumes:
   jasmin-store:
   jasmin-logs:
   redis-data:
   redis-logs:
-  rabbitmq-logs:
-  rabbitmq-data:
-  mysql-data:
 networks:
   jasmin-network:
     ipam:
