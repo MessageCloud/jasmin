@@ -44,14 +44,14 @@ When using the standard docker-compose.yml:
 1. Jasmin container -  Jasmin SMS Gateway, Jasmin API and Jasmin Web Panel
 2. Redis container - Redis Key/Value store for pre-DLR messages and post-DLR messages
 3. RabbitMQ container - All message broker queues for message processing
-4. MySQL - For message Logging
+4. MySQL - For message logging
 
 When using the docker-compose-HA-RabbitMQ.yml for remote RabbitMQ message broker usage: 
 -------------------------------------------
 
 1. Jasmin container -  Jasmin SMS Gateway, Jasmin API and Jasmin Web Panel
 2. Redis container - Redis Key/Value store for pre-DLR messages and post-DLR messages
-3. MySQL - For message Logging
+3. MySQL - For message logging
 
 
 License
