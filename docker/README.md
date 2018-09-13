@@ -36,7 +36,7 @@ $ docker start docker_messagecloud_jasmin_1
 What is included
 ================
 
-All containers use a dedicated Docker network.  They also use dedicated Docker volumes for persistent storage, accessible from the host at ```/var/lib/docker/volumes/```
+All containers communicate across a dedicated Docker network.  They also use dedicated Docker volumes for persistent storage, accessible from the host at ```/var/lib/docker/volumes/```
 
 When using the standard docker-compose.yml:
 -------------------------------------------
@@ -102,7 +102,7 @@ TELNET_PORT = int(os.environ.get('JASMIN_PORT', 8990))
 TELNET_USERNAME = os.environ.get('JASMIN_USERNAME', 'jcliadmin')
 TELNET_PW = os.environ.get('JASMIN_PASSWORD', 'jclipwd')  # no alternative storing as plain text
 DEBUG = False
-SECRET_KEY = '<input a random string of characters>'
+SECRET_KEY = '<input a random alphanumeric string of characters>'
 ```
 
 5. Copy the .env.example to .env
