@@ -15,6 +15,10 @@ ARG JASMIN_API_USERNAME
 ARG JASMIN_API_PASSWORD
 ARG JASMIN_WEBUI_USERNAME
 ARG JASMIN_WEBUI_PASSWORD
+ARG MYSQL_USERNAME
+ARG MYSQL_PASSWORD
+ARG MYSQL_HOST
+ARG MYSQL_DATABASE
 
 ENV JASMIN_VERSION "${JASMIN_VERSION}"
 ENV JASMIN_USERNAME "${JASMIN_USERNAME}"
@@ -28,6 +32,10 @@ ENV JASMIN_API_USERNAME "${JASMIN_API_USERNAME}"
 ENV JASMIN_API_PASSWORD "${JASMIN_API_PASSWORD}"
 ENV JASMIN_WEBUI_USERNAME "${JASMIN_WEBUI_USERNAME}"
 ENV JASMIN_WEBUI_PASSWORD "${JASMIN_WEBUI_PASSWORD}"
+ENV MYSQL_USERNAME "${MYSQL_USERNAME}"
+ENV MYSQL_PASSWORD "${MYSQL_PASSWORD}"
+ENV MYSQL_HOST "${MYSQL_HOST}"
+ENV MYSQL_DATABASE "${MYSQL_DATABASE}"
 
 # add our user and group first to make sure their IDs get assigned consistently, regardless of whatever dependencies get added
 RUN groupadd -r jasmin \
@@ -45,6 +53,7 @@ RUN apt-get update && apt-get install -y \
     telnet \
     nano \
     virtualenv \
+    python-mysqldb \
 &&  apt-get clean \
 &&  rm -rf /var/lib/apt/lists/*
 
@@ -55,6 +64,10 @@ RUN mkdir -p /etc/jasmin/resource \
 &&  chown jasmin:jasmin /etc/jasmin/store \
     /var/log/jasmin \
 &&  pip install --pre jasmin=="$JASMIN_VERSION"
+
+ADD ./jasmin /usr/local/lib/python2.7/dist-packages/jasmin/
+ADD ./misc/scripts/sms_logger.py /usr/local/lib/python2.7/dist-packages/jasmin/sms_logger.py
+ADD ./docker/supervisor.conf /etc/supervisor/conf.d/supervisor.conf
 
 # Change Jasmin configuration
 RUN sed -i '/\[jcli\]/a bind=0.0.0.0' /etc/jasmin/jasmin.cfg \
@@ -68,7 +81,16 @@ RUN sed -i '/\[jcli\]/a bind=0.0.0.0' /etc/jasmin/jasmin.cfg \
 &&  sed -i '/\[amqp-broker\]/a host='"$RABBITMQ_HOST" /etc/jasmin/jasmin.cfg \
 &&  sed -i '/\[amqp-broker\]/a vhost='"$RABBITMQ_VHOST" /etc/jasmin/jasmin.cfg \
 &&  sed -i '/\[amqp-broker\]/a policy=ha-jasmin' /etc/jasmin/jasmin.cfg \
-&&  sed -i '/\[amqp-broker\]/a heartbeat=15' /etc/jasmin/jasmin.cfg
+&&  sed -i '/\[amqp-broker\]/a heartbeat=15' /etc/jasmin/jasmin.cfg \
+&&  sed -i "s/host = '127.0.0.1'/host = '$RABBITMQ_HOST'/g" /usr/local/lib/python2.7/dist-packages/jasmin/sms_logger.py \
+&&  sed -i "s/username = 'guest'/username = '$RABBITMQ_USERNAME'/g" /usr/local/lib/python2.7/dist-packages/jasmin/sms_logger.py \
+&&  sed -i "s/password = 'guest'/password = '$RABBITMQ_PASSWORD'/g" /usr/local/lib/python2.7/dist-packages/jasmin/sms_logger.py \
+&&  sed -i "s/user='jasmin'/user='$MYSQL_USERNAME'/g" /usr/local/lib/python2.7/dist-packages/jasmin/sms_logger.py \
+&&  sed -i "s/passwd='jadmin'/passwd='$MYSQL_PASSWORD'/g" /usr/local/lib/python2.7/dist-packages/jasmin/sms_logger.py \
+&&  sed -i "s/host='127.0.0.1'/host='$MYSQL_HOST'/g" /usr/local/lib/python2.7/dist-packages/jasmin/sms_logger.py \
+&&  sed -i "s/db='jasmin'/db='$MYSQL_DATABASE'/g" /usr/local/lib/python2.7/dist-packages/jasmin/sms_logger.py \
+&&  sed -i "s/vhost = '\/'/vhost = '$RABBITMQ_VHOST'/g" /usr/local/lib/python2.7/dist-packages/jasmin/sms_logger.py \
+&&  sed -i '/\[sm-listener\]/a publish_submit_sm_resp=True' /etc/jasmin/jasmin.cfg
 
 EXPOSE 2775 "$JASMIN_PORT" 1401 8000 8001
 COPY ./docker/jasmin-api /jasmin-api
@@ -76,6 +98,7 @@ COPY ./docker/JasminWebPanel /JasminWebPanel
 
 # Install the WebUI and API
 RUN easy_install -U pip && apt-get install --reinstall python-pip \
+&&  easy_install mysql-python \
 &&  pip install -r /jasmin-api/requirements.txt \
 &&  /jasmin-api/jasmin_api/manage.py migrate \
 &&  echo "from django.contrib.auth.models import User; User.objects.create_superuser('$JASMIN_API_USERNAME', '', '$JASMIN_API_PASSWORD')" | /jasmin-api/jasmin_api/manage.py shell \
@@ -85,8 +108,6 @@ RUN easy_install -U pip && apt-get install --reinstall python-pip \
 &&  /webui/bin/python /JasminWebPanel/manage.py migrate \
 &&  echo "from django.contrib.auth.models import User; User.objects.create_superuser('$JASMIN_WEBUI_USERNAME', '', '$JASMIN_WEBUI_PASSWORD')" | /webui/bin/python /JasminWebPanel/manage.py shell \
 &&  echo "yes" | /webui/bin/python /JasminWebPanel/manage.py collectstatic
-
-ADD ./jasmin /usr/local/lib/python2.7/dist-packages/jasmin/
 
 COPY /docker/docker-entrypoint.sh /
 ENTRYPOINT ["/docker-entrypoint.sh"]
