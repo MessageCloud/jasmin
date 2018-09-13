@@ -27,6 +27,7 @@ Requirement:
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 """
 
+import os
 import cPickle as pickle
 import binascii
 from datetime import datetime
@@ -39,8 +40,19 @@ from txamqp.client import TwistedDelegate
 import txamqp.spec
 
 from jasmin.vendor.smpp.pdu.pdu_types import DataCoding
+from jasmin.queues.configs import AmqpConfig
 
 import MySQLdb as mdb
+
+# Related to travis-ci builds
+ROOT_PATH = os.getenv('ROOT_PATH', '/')
+
+config_file_location = '%s/etc/jasmin/jasmin.cfg' % ROOT_PATH
+AMQPJasminConfigInstance = AmqpConfig(config_file_location)
+
+arguments = {}
+if AMQPJasminConfigInstance.policy is not None:
+       arguments['Policy'] = AMQPJasminConfigInstance.policy
 
 q = {}
 
@@ -53,7 +65,7 @@ def gotConnection(conn, username, password):
     chan = yield conn.channel(1)
     yield chan.channel_open()
 
-    yield chan.queue_declare(queue="sms_logger_queue")
+    yield chan.queue_declare(arguments=arguments, queue="sms_logger_queue", durable='true')
 
     # Bind to submit.sm.* and submit.sm.resp.* routes to track sent messages
     yield chan.queue_bind(queue="sms_logger_queue", exchange="messaging", routing_key='submit.sm.*')
@@ -72,6 +84,7 @@ def gotConnection(conn, username, password):
         db='jasmin')
 
     print "Connected to MySQL"
+    db.ping(True)
     cursor = db.cursor()
 
     # Wait for messages
@@ -138,6 +151,7 @@ def gotConnection(conn, username, password):
             if qmsg['source_addr'] is None:
                 qmsg['source_addr'] = ''
 
+            db.ping(True)
             cursor.execute("""INSERT INTO submit_log (msgid, source_addr, rate, pdu_count,
                                                       destination_addr, short_message,
                                                       status, uid, created_at, binary_message,
@@ -172,6 +186,7 @@ def gotConnection(conn, username, password):
 
             # Update message status
             qmsg = q[props['message-id']]
+            db.ping(True)
             cursor.execute("UPDATE submit_log SET status = %s, status_at = %s WHERE msgid = %s;", (
                 props['headers']['message_status'],
                 datetime.now(),

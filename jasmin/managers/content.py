@@ -41,6 +41,7 @@ class PDU(Content):
         if 'headers' not in properties:
             properties['headers'] = {}
         properties['headers']['created_at'] = str(datetime.datetime.now())
+        properties['delivery-mode'] = 2
 
         Content.__init__(self, body, children, properties)
 
@@ -61,6 +62,7 @@ class DLR(Content):
             raise InvalidParameterError('deliver_sm dlr must have cid and dlr_details args defined')
 
         properties = {'message-id': str(msgid), 'headers': {'type': pdu_type_s}}
+        properties['delivery-mode'] = 2
 
         if pdu_type_s == 'submit_sm_resp' and smpp_msgid is not None:
             # smpp_msgid is used to define mapping between msgid and smpp_msgid (when receiving submit_sm_resp ESME_ROK)
@@ -90,7 +92,7 @@ class DLRContentForHttpapi(Content):
         if method not in ['POST', 'GET']:
             raise InvalidParameterError('Invalid method: %s' % method)
 
-        properties = {'message-id': msgid, 'headers': {'try-count': 0,
+        properties = {'message-id': msgid, 'delivery-mode': 2, 'headers': {'try-count': 0,
                                                        'url': dlr_url,
                                                        'method': method,
                                                        'message_status': message_status,
@@ -118,7 +120,7 @@ class DLRContentForSmpps(Content):
                                                                     'UNDELIV', 'ACCEPTD', 'UNKNOWN', 'REJECTD']:
             raise InvalidParameterError("Invalid message_status: %s" % message_status)
 
-        properties = {'message-id': msgid, 'headers': {'try-count': 0,
+        properties = {'message-id': msgid, 'delivery-mode': 2, 'headers': {'try-count': 0,
                                                        'message_status': message_status,
                                                        'system_id': system_id,
                                                        'source_addr': source_addr,
@@ -198,6 +200,6 @@ class SubmitSmRespBillContent(Content):
         if amount < 0:
             raise InvalidParameterError('Amount cannot be a negative value: %s' % amount)
 
-        properties = {'message-id': bid, 'headers': {'user-id': uid, 'amount': str(amount)}}
+        properties = {'message-id': bid, 'delivery-mode': 2, 'headers': {'user-id': uid, 'amount': str(amount)}}
 
         Content.__init__(self, bid, properties=properties)

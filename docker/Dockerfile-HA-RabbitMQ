@@ -10,6 +10,7 @@ ARG JASMIN_PORT
 ARG RABBITMQ_USERNAME
 ARG RABBITMQ_PASSWORD
 ARG RABBITMQ_HOST
+ARG RABBITMQ_VHOST
 ARG JASMIN_API_USERNAME
 ARG JASMIN_API_PASSWORD
 ARG JASMIN_WEBUI_USERNAME
@@ -26,6 +27,7 @@ ENV JASMIN_PASSWORD_MD5 "${JASMIN_PASSWORD_MD5}"
 ENV RABBITMQ_USERNAME "${RABBITMQ_USERNAME}"
 ENV RABBITMQ_PASSWORD "${RABBITMQ_PASSWORD}"
 ENV RABBITMQ_HOST "${RABBITMQ_HOST}"
+ENV RABBITMQ_VHOST "${RABBITMQ_VHOST}"
 ENV JASMIN_API_USERNAME "${JASMIN_API_USERNAME}"
 ENV JASMIN_API_PASSWORD "${JASMIN_API_PASSWORD}"
 ENV JASMIN_WEBUI_USERNAME "${JASMIN_WEBUI_USERNAME}"
@@ -77,6 +79,8 @@ RUN sed -i '/\[jcli\]/a bind=0.0.0.0' /etc/jasmin/jasmin.cfg \
 &&  sed -i '/\[amqp-broker\]/a username='"$RABBITMQ_USERNAME" /etc/jasmin/jasmin.cfg \
 &&  sed -i '/\[amqp-broker\]/a password='"$RABBITMQ_PASSWORD" /etc/jasmin/jasmin.cfg \
 &&  sed -i '/\[amqp-broker\]/a host='"$RABBITMQ_HOST" /etc/jasmin/jasmin.cfg \
+&&  sed -i '/\[amqp-broker\]/a vhost='"$RABBITMQ_VHOST" /etc/jasmin/jasmin.cfg \
+&&  sed -i '/\[amqp-broker\]/a policy=ha-jasmin' /etc/jasmin/jasmin.cfg \
 &&  sed -i '/\[amqp-broker\]/a heartbeat=15' /etc/jasmin/jasmin.cfg \
 &&  sed -i "s/host = '127.0.0.1'/host = '$RABBITMQ_HOST'/g" /usr/local/lib/python2.7/dist-packages/jasmin/sms_logger.py \
 &&  sed -i "s/username = 'guest'/username = '$RABBITMQ_USERNAME'/g" /usr/local/lib/python2.7/dist-packages/jasmin/sms_logger.py \
@@ -85,6 +89,7 @@ RUN sed -i '/\[jcli\]/a bind=0.0.0.0' /etc/jasmin/jasmin.cfg \
 &&  sed -i "s/passwd='jadmin'/passwd='$MYSQL_PASSWORD'/g" /usr/local/lib/python2.7/dist-packages/jasmin/sms_logger.py \
 &&  sed -i "s/host='127.0.0.1'/host='$MYSQL_HOST'/g" /usr/local/lib/python2.7/dist-packages/jasmin/sms_logger.py \
 &&  sed -i "s/db='jasmin'/db='$MYSQL_DATABASE'/g" /usr/local/lib/python2.7/dist-packages/jasmin/sms_logger.py \
+&&  sed -i "s/vhost = '\/'/vhost = '$RABBITMQ_VHOST'/g" /usr/local/lib/python2.7/dist-packages/jasmin/sms_logger.py \
 &&  sed -i '/\[sm-listener\]/a publish_submit_sm_resp=True' /etc/jasmin/jasmin.cfg
 
 EXPOSE 2775 "$JASMIN_PORT" 1401 8000 8001

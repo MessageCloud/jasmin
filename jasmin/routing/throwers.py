@@ -1,3 +1,4 @@
+import os
 import binascii
 import cPickle as pickle
 import logging
@@ -15,7 +16,17 @@ from jasmin.protocols.smpp.operations import SMPPOperationFactory
 from jasmin.protocols.smpp.proxies import SMPPServerPBProxy
 from jasmin.vendor.smpp.pdu.constants import data_coding_default_name_map, priority_flag_name_map
 from jasmin.vendor.smpp.pdu.pdu_encoding import DataCodingEncoder
+from jasmin.queues.configs import AmqpConfig
 
+# Related to travis-ci builds
+ROOT_PATH = os.getenv('ROOT_PATH', '/')
+
+config_file_location = '%s/etc/jasmin/jasmin.cfg' % ROOT_PATH
+AMQPJasminConfigInstance = AmqpConfig(config_file_location)
+
+arguments = {}
+if AMQPJasminConfigInstance.policy is not None:
+       arguments['Policy'] = AMQPJasminConfigInstance.policy
 
 class MessageAcknowledgementError(Exception):
     """Raised when destination end does not return 'ACK/Jasmin' back to
@@ -160,8 +171,8 @@ class Thrower(Service):
 
         # Declare exchange, queue and start consuming to self.callback
         yield self.amqpBroker.chan.exchange_declare(exchange=self.exchangeName,
-                                                    type='topic')
-        yield self.amqpBroker.named_queue_declare(queue=self.queueName)
+                                                    type='topic', durable='true', arguments=arguments)
+        yield self.amqpBroker.named_queue_declare(queue=self.queueName, durable='true', arguments=arguments)
         yield self.amqpBroker.chan.queue_bind(queue=self.queueName,
                                               exchange=self.exchangeName,
                                               routing_key=self.routingKey)
@@ -499,8 +510,8 @@ class DLRThrower(Thrower):
     @defer.inlineCallbacks
     def http_dlr_callback(self, message):
         msgid = message.content.properties['message-id']
-        url = message.content.properties['headers']['url']
-        method = message.content.properties['headers']['method']
+        url = message.content.properties['headers']['url'].encode('ascii')
+        method = message.content.properties['headers']['method'].encode('ascii')
         level = message.content.properties['headers']['level']
         self.log.debug('Got one message (msgid:%s) to throw', msgid)
 
@@ -579,9 +590,9 @@ class DLRThrower(Thrower):
 
     @defer.inlineCallbacks
     def smpp_dlr_callback(self, message):
-        msgid = message.content.properties['message-id']
+        msgid = message.content.properties['message-id'].encode('ascii')
         system_id = message.content.properties['headers']['system_id']
-        message_status = message.content.properties['headers']['message_status']
+        message_status = message.content.properties['headers']['message_status'].encode('ascii')
         source_addr = '%s' % message.content.properties['headers']['source_addr']
         destination_addr = '%s' % message.content.properties['headers']['destination_addr']
         sub_date = message.content.properties['headers']['sub_date']

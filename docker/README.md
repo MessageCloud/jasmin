@@ -33,6 +33,27 @@ $ docker stop docker_messagecloud_jasmin_1
 $ docker start docker_messagecloud_jasmin_1
 ```
 
+What is included
+================
+
+All containers communicate across a dedicated Docker network.  They also use dedicated Docker volumes for persistent storage, accessible from the host at ```/var/lib/docker/volumes/```
+
+When using the standard docker-compose.yml:
+-------------------------------------------
+
+1. Jasmin container -  Jasmin SMS Gateway, Jasmin API and Jasmin Web Panel
+2. Redis container - Redis Key/Value store for pre-DLR messages and post-DLR messages
+3. RabbitMQ container - All message broker queues for message processing
+4. MySQL - For message logging
+
+When using the docker-compose-HA-RabbitMQ.yml for remote RabbitMQ message broker usage: 
+-------------------------------------------
+
+1. Jasmin container -  Jasmin SMS Gateway, Jasmin API and Jasmin Web Panel
+2. Redis container - Redis Key/Value store for pre-DLR messages and post-DLR messages
+3. MySQL - For message logging
+
+
 License
 =======
 
@@ -73,7 +94,7 @@ https://github.com/jookies/jasmin-api.git
 
 3. Change the jasmin-api port number to 8001 by editing ```jasmin-api/jasmin_api/run_cherrypy.py```
 
-4. Create the jasmin-api ```jasmin-api/jasmin_api/jasmin_api/local_settings.py``` file and only edit the ```SECRET_KEY``` with any random string
+4. Create the jasmin-api ```jasmin-api/jasmin_api/jasmin_api/local_settings.py``` file and only edit the ```SECRET_KEY``` with any random alphanumeric string
 
 ```
 TELNET_HOST = os.environ.get('JASMIN_HOST', 'jasmin')
@@ -81,21 +102,24 @@ TELNET_PORT = int(os.environ.get('JASMIN_PORT', 8990))
 TELNET_USERNAME = os.environ.get('JASMIN_USERNAME', 'jcliadmin')
 TELNET_PW = os.environ.get('JASMIN_PASSWORD', 'jclipwd')  # no alternative storing as plain text
 DEBUG = False
-SECRET_KEY = '<input a random string of characters>'
+SECRET_KEY = '<input a random alphanumeric string of characters>'
 ```
 
 5. Copy the .env.example to .env
 
 6. Make changes to the .env
 
-7. To build and run:
+7a. To build and run with a dedicated RabbitMQ container:
 
-```docker-compose up --build```
+```docker-compose up --build -d```
 
-8. When built, remove the Docker image and comment out the ```rabbitmqctl``` lines in the ```docker-entrypoint.sh``` file and rebuild:
+7b. To build and run without a dedicated RabbitMQ container and to use a remote RabbitMQ cluster:
 
-```docker-compose up --build```
- 
+```docker-compose -f docker-compose-HA-RabbitMQ.yml up --build -d```
+
+This will use the Docker file ```Dockerfile-HA-RabbitMQ``` that allows for vhost specification and to apply the HA policy "ha-jasmin" to all exchanges and queues.
+
+
 CentOS host issues
 ------------------
 
