@@ -119,6 +119,7 @@ SECRET_KEY = '<input a random alphanumeric string of characters>'
 
 This will use the Docker file ```Dockerfile-HA-RabbitMQ``` that allows for vhost specification and to apply the HA policy "ha-jasmin" to all exchanges and queues.
 
+When using a remote HA Rabbit Cluster you MUST use an alternative Virtual Host to '/'.
 
 CentOS host issues
 ------------------
