@@ -13,7 +13,7 @@ Requirement:
     `pdu_count`        TINYINT(3) DEFAULT 1,
     `short_message`    BLOB,
     `binary_message`   BLOB,
-    `status`           VARCHAR(15) NOT NULL CHECK (`status` <> ''),
+    `status`           VARCHAR(50) NOT NULL CHECK (`status` <> ''),
     `uid`              VARCHAR(15) NOT NULL CHECK (`uid` <> ''),
     `trials`           TINYINT(4) DEFAULT 1,
     `created_at`       DATETIME NOT NULL,
@@ -221,6 +221,7 @@ if __name__ == "__main__":
         AMQClient,
         delegate=TwistedDelegate(),
         vhost=vhost,
+        heartbeat=15,
         spec=spec).connectTCP(host, port)
     d.addCallback(gotConnection, username, password)
 
