@@ -1,6 +1,8 @@
 *.py[cod]
 *~
 docker/.env
+docker/JasminWebPanel
+docker/jasmin-api
 
 # Jasmin
 misc/config/store

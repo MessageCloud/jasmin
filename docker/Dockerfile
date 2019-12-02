@@ -41,7 +41,7 @@ RUN groupadd -r jasmin \
 
 # Install requirements
 RUN apt-get update && apt-get install -y \
-    python2.7 \
+    python-setuptools \
     python-pip \
     python-dev \
     libffi-dev \
@@ -52,6 +52,7 @@ RUN apt-get update && apt-get install -y \
     nano \
     virtualenv \
     python-mysqldb \
+&&  easy_install -U pip \
 &&  apt-get clean \
 &&  rm -rf /var/lib/apt/lists/*
 
@@ -92,8 +93,7 @@ COPY ./docker/jasmin-api /jasmin-api
 COPY ./docker/JasminWebPanel /JasminWebPanel
 
 # Install the WebUI and API
-RUN easy_install -U pip && apt-get install --reinstall python-pip \
-&&  easy_install mysql-python \
+RUN easy_install mysql-python \
 &&  pip install -r /jasmin-api/requirements.txt \
 &&  /jasmin-api/jasmin_api/manage.py migrate \
 &&  echo "from django.contrib.auth.models import User; User.objects.create_superuser('$JASMIN_API_USERNAME', '', '$JASMIN_API_PASSWORD')" | /jasmin-api/jasmin_api/manage.py shell \
@@ -106,6 +106,4 @@ RUN easy_install -U pip && apt-get install --reinstall python-pip \
 
 COPY /docker/docker-entrypoint.sh /
 ENTRYPOINT ["/docker-entrypoint.sh"]
-# Notes:
-# - jasmind is started with native dlr-thrower and dlr-lookup threads instead of standalone processes
-# - restapi (0.9rc16+) is not started in this docker configuration
+
