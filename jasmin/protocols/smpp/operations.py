@@ -95,7 +95,7 @@ class SMPPOperationFactory(object):
         # Fill return object with default values
         # These values are not mandatory, this means the pdu will
         # be considered as a DLR even when they are not set !
-        ret = {'dlvrd': 'ND', 'sub': 'ND', 'sdate': 'ND', 'ddate': 'ND', 'err': 'ND', 'text': ''}
+        ret = {'dlvrd': 'ND', 'sub': 'ND', 'sdate': 'ND', 'ddate': 'ND', 'err': 'ND', 'text': '', 'subaddress': 'ND'}
 
         # 1.Looking for optional parameters
         ###################################
@@ -107,32 +107,43 @@ class SMPPOperationFactory(object):
             else:
                 ret['stat'] = 'UNKNOWN'
 
+        if 'source_subaddress' in pdu.params:
+            ret['subaddress'] = pdu.params['source_subaddress']
+
         # 2.Message content parsing if short_message exists:
         ####################################################
         # Example of DLR content
         # id:IIIIIIIIII sub:SSS dlvrd:DDD submit date:YYMMDDhhmm done
         # date:YYMMDDhhmm stat:DDDDDDD err:E text: . . . . . . . . .
         if 'short_message' in pdu.params:
-            patterns = [
-                r"id:(?P<id>[\dA-Za-z-_]+)",
-                r"sub:(?P<sub>\d{3})",
-                r"dlvrd:(?P<dlvrd>\d{3})",
-                r"submit date:(?P<sdate>\d+)",
-                r"done date:(?P<ddate>\d+)",
-                r"stat:(?P<stat>\w{7})",
-                r"err:(?P<err>\w{3})",
-                r"text:(?P<text>.*)",
-            ]
+            # oa and da added as optional extra params
+            keywords = ['id:', 'sub:', 'dlvrd:', 'submit date:', 'done date:', 'stat:', 'err:', 'text:', 'oa:', 'da:']
 
-            # Look for patterns and compose return object
-            for pattern in patterns:
-                m = re.search(pattern, pdu.params['short_message'])
-                if m:
-                    key = m.groupdict().keys()[0]
-                    if (key not in ['id', 'stat']
-                        or (key == 'id' and 'id' not in ret)
-                        or (key == 'stat' and 'stat' not in ret)):
-                        ret.update(m.groupdict())
+            for keyword in keywords:
+                pos = pdu.params['short_message'].find(keyword)
+
+                if pos < 0: # not found
+                    continue
+
+                part = pdu.params['short_message'][pos:]
+                current_next_pos = len(pdu.params['short_message'])
+
+                for next_keyword in keywords:
+                    next_pos = part.find(next_keyword)
+
+                    if next_pos > 0 and next_pos < current_next_pos:
+                        current_next_pos = next_pos
+
+                part = part[0:current_next_pos].strip().split(':', 1)
+
+                # if we have a valid 2-piece list.. (the rest of this `if` comes from the original
+                # and means "don't overwrite the id and stat fields that were set in step 1, above")
+                if (len(part) == 2
+                    and (part[0] not in ['id', 'stat']
+                        or (part[0] == 'id' and 'id' not in ret)
+                        or (part[0] == 'stat' and 'stat' not in ret))):
+                    # add to the return value
+                    ret.update({part[0] : part[1]})
 
         # Should we consider this as a DLR ?
         if 'id' in ret and 'stat' in ret:
