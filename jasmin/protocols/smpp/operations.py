@@ -142,8 +142,17 @@ class SMPPOperationFactory(object):
                     and (part[0] not in ['id', 'stat']
                         or (part[0] == 'id' and 'id' not in ret)
                         or (part[0] == 'stat' and 'stat' not in ret))):
+                  
+                    # make sure the keys conform to the old return values
+                    if part[0] == 'submit date':
+                        key = 'sdate'
+                    elif part[0] == 'done date':
+                        key = 'ddate'
+                    else
+                        key = part[0]
+
                     # add to the return value
-                    ret.update({part[0] : part[1]})
+                    ret.update({key : part[1]})
 
         # Should we consider this as a DLR ?
         if 'id' in ret and 'stat' in ret:
