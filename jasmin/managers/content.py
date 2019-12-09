@@ -80,7 +80,7 @@ class DLRContentForHttpapi(Content):
     receipt acknowledgment details"""
 
     def __init__(self, message_status, msgid, dlr_url, dlr_level, dlr_connector='unknown', id_smsc='', sub='',
-                 dlvrd='', subdate='', donedate='', err='', text='', method='POST', trycount=0):
+                 dlvrd='', subdate='', donedate='', err='', text='', method='POST', trycount=0, subaddress='', network_error_code=''):
 
         # ESME_* statuses are returned from SubmitSmResp
         # Others are returned from DeliverSm, values must be the same as Table B-2
@@ -104,6 +104,8 @@ class DLRContentForHttpapi(Content):
                                                        'donedate': donedate,
                                                        'err': err,
                                                        'connector': dlr_connector,
+                                                       'subaddress': subaddress,
+                                                       'network_error_code': network_error_code,
                                                        'text': text}}
 
         Content.__init__(self, msgid, properties=properties)

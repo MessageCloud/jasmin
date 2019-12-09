@@ -303,6 +303,8 @@ class DLRLookup(object):
         pdu_dlr_err = message.content.properties['headers']['dlr_err']
         pdu_dlr_text = message.content.properties['headers']['dlr_text']
         pdu_dlr_dlvrd = message.content.properties['headers']['dlr_dlvrd']
+        pdu_dlr_subaddress = message.content.properties['headers']['dlr_subaddress']
+        pdu_dlr_network_error_code = message.content.properties['headers']['dlr_network_error_code']
         pdu_dlr_status = message.content.body
 
         try:
@@ -354,7 +356,9 @@ class DLRLookup(object):
                                                                                donedate=pdu_dlr_ddate,
                                                                                err=pdu_dlr_err,
                                                                                text=pdu_dlr_text,
-                                                                               method=dlr_method))
+                                                                               method=dlr_method,
+                                                                               subaddress=pdu_dlr_subaddress,
+                                                                               network_error_code=pdu_dlr_network_error_code))
 
                     if pdu_dlr_status in final_states:
                         self.log.debug('Removing HTTP dlr map for msgid[%s]', submit_sm_queue_id)

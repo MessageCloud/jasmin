@@ -535,10 +535,12 @@ class DLRThrower(Thrower):
             args['donedate'] = message.content.properties['headers']['donedate']
             args['err'] = message.content.properties['headers']['err']
             args['text'] = message.content.properties['headers']['text']
+            args['subaddress'] = message.content.properties['headers']['subaddress']
+            args['network_error_code'] = message.content.properties['headers']['network_error_code']
 
         try:
             #urlParts = urllib.parse(url)
-            
+
             #baseurl = '%s://%s:%d%s' % urlParts.scheme, urlParts.netloc, urlParts.port, urlParts.path
             # queryString = parse_qsl(urlparse(url)[4])
 
