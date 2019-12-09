@@ -148,7 +148,7 @@ class SMPPOperationFactory(object):
                         key = 'sdate'
                     elif part[0] == 'done date':
                         key = 'ddate'
-                    else
+                    else:
                         key = part[0]
 
                     # add to the return value
