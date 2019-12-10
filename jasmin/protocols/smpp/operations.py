@@ -95,7 +95,7 @@ class SMPPOperationFactory(object):
         # Fill return object with default values
         # These values are not mandatory, this means the pdu will
         # be considered as a DLR even when they are not set !
-        ret = {'dlvrd': 'ND', 'sub': 'ND', 'sdate': 'ND', 'ddate': 'ND', 'err': 'ND', 'text': '', 'subaddress': 'ND'}
+        ret = {'dlvrd': 'ND', 'sub': 'ND', 'sdate': 'ND', 'ddate': 'ND', 'err': 'ND', 'text': '', 'subaddress': 'ND', 'network_error_code': 'ND'}
 
         # 1.Looking for optional parameters
         ###################################
@@ -109,6 +109,9 @@ class SMPPOperationFactory(object):
 
         if 'source_subaddress' in pdu.params:
             ret['subaddress'] = pdu.params['source_subaddress']
+
+        if 'network_error_code' in pdu.params:
+            ret['network_error_code'] = pdu.params['network_error_code']
 
         # 2.Message content parsing if short_message exists:
         ####################################################
@@ -142,7 +145,7 @@ class SMPPOperationFactory(object):
                     and (part[0] not in ['id', 'stat']
                         or (part[0] == 'id' and 'id' not in ret)
                         or (part[0] == 'stat' and 'stat' not in ret))):
-                  
+
                     # make sure the keys conform to the old return values
                     if part[0] == 'submit date':
                         key = 'sdate'
