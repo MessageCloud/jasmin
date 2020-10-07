@@ -287,6 +287,11 @@ command_status_value_map = {
         'name': 'ESME_RINVBCASTCHANIND',
         'description': 'Broadcast Channel Indicator is invalid',
     },
+    # error codes for three uk premium
+    0x0000041cL: {
+        'name': 'ESME_RINSUFFICIENTCREDIT',
+        'description': 'Insufficient credit to complete transaction',
+    },
     # Jasmin update:
     -1: {
         'name': 'RESERVEDSTATUS_SMPP_EXTENSION',
